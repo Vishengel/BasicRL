@@ -1,7 +1,12 @@
 # GridworldRL
 Implementation of Q-learning for simple grid worlds. The user can provide an arbitrary grid world in a .txt file, which is then visualized with PyGame.
 
-Run with:
+Install the required libraries with:
+```console
+pip install -r requirements.txt
+```
+
+Then run with:
 ```console
 python run.py --g "gridfile.txt"
 ``` 
