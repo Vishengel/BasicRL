@@ -12,3 +12,6 @@ rewards = {
     CellStates.GOAL: 25,
     CellStates.TRAP: -25
 }
+
+# If set to True, perform all learning before visualization
+offline = True

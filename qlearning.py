@@ -10,11 +10,15 @@ class QLearning():
         self.init_qtable()
 
     def init_agent(self):
-        self.env.agent = Agent(self.env.start)
-        self.update_cell(self.env.start, CellStates.AGENT)
+        if self.env.agent:
+            self.teleport_agent(self.env.start)
+        else:
+            self.env.agent = Agent(self.env.start)
+            self.set_occupation(self.env.agent.pos, True)
+
 
     def move_agent(self, dir):
-        self.update_cell(self.env.agent.pos, CellStates.EMPTY)
+        self.set_occupation(self.env.agent.pos, False)
         x = self.env.agent.pos[0]
         y = self.env.agent.pos[1]
 
@@ -36,17 +40,22 @@ class QLearning():
             exit(0)
 
         self.env.agent.pos = new_pos
-        self.update_cell(self.env.agent.pos, CellStates.AGENT)
+        self.set_occupation(self.env.agent.pos, True)
 
     def teleport_agent(self, pos):
-        self.update_cell(self.env.agent.pos, CellStates.EMPTY)
+        self.set_occupation(self.env.agent.pos, False)
         self.env.agent.pos = pos
-        self.update_cell(self.env.agent.pos, CellStates.AGENT)
+        self.set_occupation(self.env.agent.pos, True)
 
     def update_cell(self, pos, state):
         x = pos[0]
         y = pos[1]
         self.env.grid[y][x].state = state
+
+    def set_occupation(self, pos, occupied):
+        x = pos[0]
+        y = pos[1]
+        self.env.grid[y][x].occupied = occupied
 
     def init_qtable(self):
         self.qtable = {}
@@ -60,7 +69,7 @@ class QLearning():
                     key = "{}{}{}".format(x, y, action)
                     self.qtable[key] = 0.0
 
-    def learn(self, n_episodes, max_timesteps, lr, disc, epsilon):
+    def learn_offline(self, n_episodes, max_timesteps, lr, disc, epsilon):
         for ep in range(n_episodes):
             t = 0
             stop_condition = False
@@ -91,9 +100,6 @@ class QLearning():
 
                 if t == max_timesteps or new_state.state == CellStates.GOAL or new_state.state == CellStates.TRAP:
                     stop_condition = True
-
-        print(self.qtable)
-        self.print_policy()
 
 
     def get_greedy_action(self, state):

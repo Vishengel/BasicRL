@@ -2,11 +2,10 @@ from enum import Enum
 
 class CellStates(Enum):
     EMPTY = 1
-    AGENT = 2
-    START = 3
-    GOAL = 4
-    TRAP = 5
-    WALL = 6
+    START = 2
+    GOAL = 3
+    TRAP = 4
+    WALL = 5
 
 class Actions(Enum):
     UP = 1
@@ -24,17 +23,28 @@ class Cell():
         self.state = init_state
         self.actions = []
         self.reward = 0
+        self.occupied = False
+
+    def __str__(self):
+        line = "Grid coordinates: {}\n".format(self.pos) + "State: {}\n".format(self.state) + \
+               "Legal actions: {}\n".format(self.actions) + "Reward: {}\n".format(self.reward) + \
+            "Occupied: {}\n".format(self.occupied)
+
+        return line
 
 class Environment():
 
     def __init__(self, grid_file, rewards):
         print("Initializing grid")
         self.rewards = rewards
-        self.char_to_state = {'C': CellStates.EMPTY, 'A': CellStates.AGENT, 'S': CellStates.START, 'G': CellStates.GOAL, 'T': CellStates.TRAP, 'W': CellStates.WALL}
+        self.char_to_state = {'C': CellStates.EMPTY, 'S': CellStates.START,
+                              'G': CellStates.GOAL, 'T': CellStates.TRAP, 'W': CellStates.WALL}
         self.state_to_char = self.make_state_to_char()
+        self.agent = None
+        self.start = None
+        self.goals = []
         self.grid = self.load_grid_from_file(grid_file)
         self.init_actions()
-        self.agent = None
 
     def make_state_to_char(self):
         state_to_char = {}
@@ -46,6 +56,7 @@ class Environment():
 
     def load_grid_from_file(self, grid_file):
         grid = []
+        n_cols = 0
 
         try:
             gf = open(grid_file)
@@ -53,6 +64,14 @@ class Environment():
             for y, line in enumerate(gf):
                 line = line.strip("\n")
                 row = []
+
+                # Make sure the input grid is rectangular in shape, i.e. each row is of equal size
+                if y == 0:
+                    # Store size of first row
+                    n_cols = len(line)
+                elif len(line) != n_cols:
+                    # Throw error if the size of the current row deviates from the first row
+                    raise ValueError("Input grid should be rectangular in shape")
 
                 for x, c in enumerate(line):
                     pos = (x, y)
@@ -65,6 +84,8 @@ class Environment():
 
                     if c == self.state_to_char[CellStates.START]:
                         self.start = pos
+                    elif c == self.state_to_char[CellStates.GOAL]:
+                        self.goals.append(pos)
 
                 grid.append(row)
 
